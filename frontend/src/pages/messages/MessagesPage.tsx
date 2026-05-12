@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { getConversationsForUser } from '../../data/messages';
 import { ChatUserList } from '../../components/chat/ChatUserList';
 // import { MessageCircle } from 'lucide-react';

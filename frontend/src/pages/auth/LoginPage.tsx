@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, CircleDollarSign, Building2, LogIn, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { UserRole } from '../../types';
@@ -30,18 +30,7 @@ export const LoginPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
-  // For demo purposes, pre-filled credentials
-  const fillDemoCredentials = (userRole: UserRole) => {
-    if (userRole === 'entrepreneur') {
-      setEmail('sarah@techwave.io');
-      setPassword('password123');
-    } else {
-      setEmail('michael@vcinnovate.com');
-      setPassword('password123');
-    }
-    setRole(userRole);
-  };
+
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -138,9 +127,9 @@ export const LoginPage: React.FC = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                   Forgot your password?
-                </a>
+                </Link>
               </div>
             </div>
             
@@ -153,35 +142,6 @@ export const LoginPage: React.FC = () => {
               Sign in
             </Button>
           </form>
-          
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Demo Accounts</span>
-              </div>
-            </div>
-            
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => fillDemoCredentials('entrepreneur')}
-                leftIcon={<Building2 size={16} />}
-              >
-                Entrepreneur Demo
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => fillDemoCredentials('investor')}
-                leftIcon={<CircleDollarSign size={16} />}
-              >
-                Investor Demo
-              </Button>
-            </div>
-          </div>
           
           <div className="mt-6">
             <div className="relative">

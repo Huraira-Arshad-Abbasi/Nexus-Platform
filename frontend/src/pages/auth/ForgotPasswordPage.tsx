@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
@@ -21,6 +21,7 @@ export const ForgotPasswordPage: React.FC = () => {
       setIsSubmitted(true);
     } catch (error) {
       // Error is handled by the AuthContext
+      console.error('Forgot password request failed', error);
     } finally {
       setIsLoading(false);
     }

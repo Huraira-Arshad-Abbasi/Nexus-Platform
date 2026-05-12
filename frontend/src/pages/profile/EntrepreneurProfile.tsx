@@ -1,21 +1,46 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { userApi } from '../../api/api';
+import { Entrepreneur } from '../../types';
 import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { useAuth } from '../../context/AuthContext';
-import { findUserById } from '../../data/users';
-import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
-import { Entrepreneur } from '../../types';
+import { useAuth } from '../../context/useAuth';
+// import { findUserById } from '../../data/users';
+// import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
 
 export const EntrepreneurProfile: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
-  
-  // Fetch entrepreneur data
-  const entrepreneur = findUserById(id || '') as Entrepreneur | null;
+  const [entrepreneur, setEntrepreneur] = useState<Entrepreneur | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+useEffect(() => {
+  if (!id) return;  
+  userApi.getProfile(id)
+    .then(({ data }) => {
+        const userData = {
+        ...data.user,
+        id: data.user.id, 
+      };
+      if (userData.role === 'entrepreneur') {
+        setEntrepreneur(userData as Entrepreneur);
+      } else {
+        setEntrepreneur(null);
+      }
+    })
+    .catch(err => {
+      console.error('Error fetching entrepreneur profile:', err);
+      setEntrepreneur(null);
+    })
+    .finally(() => setLoading(false));
+}, [id]);
+
+ if (loading) return <div className="text-center py-12">Loading...</div>;
+
   
   if (!entrepreneur || entrepreneur.role !== 'entrepreneur') {
     return (
@@ -31,24 +56,13 @@ export const EntrepreneurProfile: React.FC = () => {
   
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
+   const hasRequestedCollaboration = false; // Wire up in Week 2 with real collaboration API
+
   
-  // Check if the current investor has already sent a request to this entrepreneur
-  const hasRequestedCollaboration = isInvestor && id 
-    ? getRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id)
-    : false;
-  
+
   const handleSendRequest = () => {
-    if (isInvestor && currentUser && id) {
-      createCollaborationRequest(
-        currentUser.id,
-        id,
-        `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
-      );
-      
-      // In a real app, we would refresh the data or update state
-      // For this demo, we'll force a page reload
-      window.location.reload();
-    }
+    // Wire up in Week 2 with real collaboration API
+    console.log('Collaboration request - implement in Week 2');
   };
   
   return (
@@ -113,11 +127,14 @@ export const EntrepreneurProfile: React.FC = () => {
                 )}
               </>
             )}
+
+            {/* user should go to the settingsPage.tsx */}
             
             {isCurrentUser && (
               <Button
                 variant="outline"
                 leftIcon={<UserCircle size={18} />}
+                onClick={() => navigate('/settings')}
               >
                 Edit Profile
               </Button>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
@@ -33,6 +33,7 @@ export const ResetPasswordPage: React.FC = () => {
       navigate('/login');
     } catch (error) {
       // Error is handled by the AuthContext
+      console.error('Password reset failed', error);
     } finally {
       setIsLoading(false);
     }

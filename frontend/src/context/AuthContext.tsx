@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { authApi, userApi } from '../api/api';
 import { User, UserRole, AuthContextType } from '../types/index';
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null); // ← export the context
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -46,10 +46,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateProfile = async (userId: string, updates: Partial<User>) => {
-    const { data } = await userApi.updateProfile(userId, updates);
-    setUser(data.user);
-    localStorage.setItem('nexus_user', JSON.stringify(data.user));
-  };
+  const { data } = await userApi.updateProfile(userId, updates);
+  setUser(data.user);  
+  localStorage.setItem('nexus_user', JSON.stringify(data.user));
+};
 
   return (
     <AuthContext.Provider value={{
@@ -66,10 +66,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used inside AuthProvider');
-  return context;
 };

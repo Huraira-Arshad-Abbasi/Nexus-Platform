@@ -11,7 +11,7 @@ const generateToken = (userId) =>
 const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    
+
     if (!name || !email || !password || !role)
       return res.status(400).json({ message: 'All fields are required' });
 
@@ -33,12 +33,12 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
-    
+
     if (!email || !password || !role)
       return res.status(400).json({ message: 'All fields are required' });
 
     const user = await User.findOne({ email });
-  
+
     if (!user)
       return res.status(401).json({ message: 'Invalid credentials' });
 
@@ -50,7 +50,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
 
     user.isOnline = true;
-    
+
     await user.save();
 
     const token = generateToken(user._id);
@@ -113,8 +113,8 @@ const resetPassword = async (req, res) => {
 const authController = {
   register,
   login,
-    forgotPassword,
-    resetPassword,
+  forgotPassword,
+  resetPassword,
 };
 
 export default authController;

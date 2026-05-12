@@ -1,5 +1,5 @@
 import API from './axios';
-import { User, UserRole } from '../types/index';
+import { Entrepreneur, Investor, User, UserRole } from '../types/index';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,12 +49,14 @@ export const authApi = {
 
 // ─── Users / Profile ──────────────────────────────────────────────────────────
 
+
+
 export const userApi = {
   getProfile: (userId: string) =>
-    API.get<User>(`/users/${userId}/profile`),
+    API.get<{ user: Entrepreneur | Investor }>(`/users/${userId}/profile`),
 
-  updateProfile: (userId: string, updates: Partial<User>) =>
-    API.put<User>(`/users/${userId}/profile`, updates),
+  updateProfile: (userId: string, updates: Partial<Entrepreneur> | Partial<Investor>) =>
+    API.put<{ user: Entrepreneur | Investor }>(`/users/${userId}/profile`, updates),
 };
 
 // ─── Placeholder sections (fill in Week 2 & 3) ───────────────────────────────

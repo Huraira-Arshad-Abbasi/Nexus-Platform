@@ -134,3 +134,4 @@ export const findUserById = (id: string) => {
 export const getUsersByRole = (role: 'entrepreneur' | 'investor') => {
   return users.filter(user => user.role === role);
 };
+

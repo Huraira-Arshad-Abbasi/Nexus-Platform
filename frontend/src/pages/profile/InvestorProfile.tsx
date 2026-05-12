@@ -1,21 +1,46 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { useAuth } from '../../context/AuthContext';
-import { findUserById } from '../../data/users';
+import { useAuth } from '../../context/useAuth';  // ← updated import
+import { userApi } from '../../api/api';
 import { Investor } from '../../types';
 
 export const InvestorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
   
-  // Fetch investor data
-  const investor = findUserById(id || '') as Investor | null;
-  
+  const [investor, setInvestor] = useState<Investor | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    userApi.getProfile(id)
+      .then(({ data }) => {
+        
+        const userData = {
+          ...data.user,
+          id: data.user.id,
+        };
+        if (userData.role === 'investor') {
+          setInvestor(userData as Investor);
+        } else {
+          setInvestor(null);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching investor profile:', err);
+        setInvestor(null);
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <div className="text-center py-12">Loading...</div>;
+
   if (!investor || investor.role !== 'investor') {
     return (
       <div className="text-center py-12">
@@ -27,7 +52,7 @@ export const InvestorProfile: React.FC = () => {
       </div>
     );
   }
-  
+
   const isCurrentUser = currentUser?.id === investor.id;
   
   return (
@@ -56,7 +81,7 @@ export const InvestorProfile: React.FC = () => {
                   <MapPin size={14} className="mr-1" />
                   San Francisco, CA
                 </Badge>
-                {investor.investmentStage.map((stage, index) => (
+                {investor.investmentStage && investor.investmentStage.map((stage, index) => (
                   <Badge key={index} variant="secondary" size="sm">{stage}</Badge>
                 ))}
               </div>
@@ -78,6 +103,7 @@ export const InvestorProfile: React.FC = () => {
               <Button
                 variant="outline"
                 leftIcon={<UserCircle size={18} />}
+                onClick={() => navigate('/settings')}
               >
                 Edit Profile
               </Button>
@@ -153,11 +179,11 @@ export const InvestorProfile: React.FC = () => {
           <Card>
             <CardHeader className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">Portfolio Companies</h2>
-              <span className="text-sm text-gray-500">{investor.portfolioCompanies.length} companies</span>
+              <span className="text-sm text-gray-500">{investor.portfolioCompanies && investor.portfolioCompanies.length} companies</span>
             </CardHeader>
             <CardBody>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {investor.portfolioCompanies.map((company, index) => (
+                {investor.portfolioCompanies && investor.portfolioCompanies.map((company, index) => (
                   <div key={index} className="flex items-center p-3 border border-gray-200 rounded-md">
                     <div className="p-3 bg-primary-50 rounded-md mr-3">
                       <Briefcase size={18} className="text-primary-700" />
@@ -257,7 +283,7 @@ export const InvestorProfile: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-sm font-medium text-gray-900">Active Investments</h3>
-                      <p className="text-xl font-semibold text-primary-700 mt-1">{investor.portfolioCompanies.length}</p>
+                      <p className="text-xl font-semibold text-primary-700 mt-1">{investor.portfolioCompanies && investor.portfolioCompanies.length}</p>
                     </div>
                     <BarChart3 size={24} className="text-primary-600" />
                   </div>
