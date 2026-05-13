@@ -34,9 +34,21 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+//GET /api/users — get all users (for meeting scheduling)
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user.id } })
+      .select('name email role avatarUrl');
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 const userController = {
   getProfile,
   updateProfile,
+  getAllUsers
 };
 
 export default userController;

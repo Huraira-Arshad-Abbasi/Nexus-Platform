@@ -6,6 +6,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 
+import meetingRoutes from './routes/meeting.routes.js';
+
 
 const app = express();
 dotenv.config();
@@ -15,6 +17,8 @@ app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+
+app.use('/api/meetings', meetingRoutes);
 
 // Health check
 app.get("/", (req, res) => {

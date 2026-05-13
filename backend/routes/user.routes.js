@@ -10,6 +10,7 @@ router.use(authMiddleware);
 
 router.get('/:id/profile', userController.getProfile);
 router.put('/:id/profile', userController.updateProfile);
+router.get('/', userController.getAllUsers); // for meeting scheduling dropdown
 
 // Example of role-protected route (for Week 2 dashboards)
 // router.get('/investors', roleMiddleware('entrepreneur'), userController.listInvestors);

@@ -57,11 +57,53 @@ export const userApi = {
 
   updateProfile: (userId: string, updates: Partial<Entrepreneur> | Partial<Investor>) =>
     API.put<{ user: Entrepreneur | Investor }>(`/users/${userId}/profile`, updates),
+
+  getAllUsers: () =>
+  API.get<{ users: User[] }>('/users'),
 };
 
-// ─── Placeholder sections (fill in Week 2 & 3) ───────────────────────────────
+// ─── Meeting Types ────────────────────────────────────────
+export interface Meeting {
+  _id: string;
+  title: string;
+  scheduledBy: { _id: string; name: string; email: string; avatarUrl: string; role: string };
+  scheduledWith: { _id: string; name: string; email: string; avatarUrl: string; role: string };
+  date: string;
+  duration: number;
+  message: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  meetingLink: string;
+  createdAt: string;
+}
 
-// export const meetingApi = { ... }
+export interface ScheduleMeetingPayload {
+  title: string;
+  scheduledWith: string; // user ID
+  date: string;
+  duration: number;
+  message: string;
+}
+
+// ─── Meeting API ──────────────────────────────────────────
+export const meetingApi = {
+  getMeetings: () =>
+    API.get<{ meetings: Meeting[] }>('/meetings'),
+
+  scheduleMeeting: (payload: ScheduleMeetingPayload) =>
+    API.post<{ meeting: Meeting }>('/meetings', payload),
+
+  updateStatus: (meetingId: string, status: 'accepted' | 'rejected' | 'cancelled') =>
+    API.patch<{ meeting: Meeting }>(`/meetings/${meetingId}/status`, { status }),
+
+  deleteMeeting: (meetingId: string) =>
+    API.delete(`/meetings/${meetingId}`),
+};
+
+
+
+// ─── Remaining sections  ───────────────────────────────
+
+
 // export const documentApi = { ... }
 // export const paymentApi = { ... }
 
