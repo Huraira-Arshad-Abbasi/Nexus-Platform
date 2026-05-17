@@ -5,7 +5,8 @@ export const scheduleMeeting = async (req, res) => {
   try {
     const { title, scheduledWith, date, duration, message } = req.body;
     const scheduledBy = req.user.id;
-
+    console.log(scheduledWith, "scheduledWith", scheduledBy, "scheduledBy");
+    
     if (!title || !scheduledWith || !date)
       return res.status(400).json({ message: 'Title, participant and date are required' });
 

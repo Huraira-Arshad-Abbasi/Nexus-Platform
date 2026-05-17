@@ -66,8 +66,22 @@ export const userApi = {
 export interface Meeting {
   _id: string;
   title: string;
-  scheduledBy: { _id: string; name: string; email: string; avatarUrl: string; role: string };
-  scheduledWith: { _id: string; name: string; email: string; avatarUrl: string; role: string };
+  scheduledBy: {
+    _id: string;
+    id?: string;       // ← add this
+    name: string;
+    email: string;
+    avatarUrl: string;
+    role: string;
+  };
+  scheduledWith: {
+    _id: string;
+    id?: string;       // ← add this
+    name: string;
+    email: string;
+    avatarUrl: string;
+    role: string;
+  };
   date: string;
   duration: number;
   message: string;

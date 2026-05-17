@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { meetingApi, Meeting } from '../../api/api';
 import { userApi } from '../../api/api';
 import { useAuth } from '../../context/useAuth';
+import { User } from '../../types';
 
 interface Props {
   onClose: () => void;
@@ -13,7 +14,7 @@ interface Props {
 
 const ScheduleMeetingModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   const { user } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,7 +30,7 @@ const ScheduleMeetingModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     userApi.getAllUsers()
       .then(({ data }) => {
         // Filter out current user
-        setUsers(data.users.filter((u: any) => u.id !== user?.id && u._id !== user?.id));
+        setUsers(data.users.filter((u: User) => u.id !== user?.id && u.id !== user?.id));
       })
       .catch(console.error);
   }, [user?.id]);
@@ -101,7 +102,7 @@ const ScheduleMeetingModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             >
               <option value="">Select a person...</option>
               {users.map((u) => (
-                <option key={u._id || u.id} value={u._id || u.id}>
+                <option key={u.id} value={u.id}>
                   {u.name} ({u.role})
                 </option>
               ))}
