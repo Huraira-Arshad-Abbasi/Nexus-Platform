@@ -115,9 +115,38 @@ export const meetingApi = {
 
 
 
-// ─── Remaining sections  ───────────────────────────────
+// ─── Document API  ───────────────────────────────
+export interface Document {
+  _id: string
+  name: string
+  url: string
+  type: string
+  size: string
+  status: string
+  version: number
+  signatureUrl: string
+  signedBy: { name: string; email: string } | null
+  signedAt: string | null
+  uploadedBy: { name: string; email: string; avatarUrl: string }
+  createdAt: string
+}
+
+export const documentApi = {
+  getDocuments: () =>
+    API.get<{ documents: Document[] }>('/documents'),
+
+  uploadDocument: (formData: FormData) =>
+    API.post<{ document: Document }>('/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  deleteDocument: (id: string) =>
+    API.delete(`/documents/${id}`),
+
+  attachSignature: (id: string, signatureUrl: string) =>
+    API.post<{ document: Document }>(`/documents/${id}/signature`, { signatureUrl }),
+};
 
 
-// export const documentApi = { ... }
 // export const paymentApi = { ... }
 

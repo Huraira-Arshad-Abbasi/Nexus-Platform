@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import meetingRoutes from './routes/meeting.routes.js';
 import { initVideoSignaling } from './socket/videoSignaling.js';
+import documentRoutes from './routes/document.routes.js'
 
 const app = express();
 const httpServer = createServer(app);
@@ -43,6 +44,7 @@ app.get('/', (req, res) => res.send('API Running...'));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/documents', documentRoutes);
 
 initVideoSignaling(io);
 
