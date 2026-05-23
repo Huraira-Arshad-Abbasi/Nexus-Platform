@@ -1,272 +1,239 @@
-import React, { useState } from 'react';
-import { Search, Filter, DollarSign, TrendingUp, Users, Calendar } from 'lucide-react';
-import { Card, CardHeader, CardBody } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
-import { Avatar } from '../../components/ui/Avatar';
+import React, { useEffect, useState } from 'react'
+import { DollarSign, ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, CreditCard } from 'lucide-react'
+import { Card, CardBody, CardHeader } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Badge } from '../../components/ui/Badge'
+import { paymentApi, Wallet, Transaction } from '../../api/api'
+import { loadStripe } from '@stripe/stripe-js'
+import DepositModal from './DepositModal'
+import WithdrawModal from './WithdrawModal'
+import TransferModal from './TransferModal'
 
-const deals = [
-  {
-    id: 1,
-    startup: {
-      name: 'TechWave AI',
-      logo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
-      industry: 'FinTech'
-    },
-    amount: '$1.5M',
-    equity: '15%',
-    status: 'Due Diligence',
-    stage: 'Series A',
-    lastActivity: '2024-02-15'
-  },
-  {
-    id: 2,
-    startup: {
-      name: 'GreenLife Solutions',
-      logo: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
-      industry: 'CleanTech'
-    },
-    amount: '$2M',
-    equity: '20%',
-    status: 'Term Sheet',
-    stage: 'Seed',
-    lastActivity: '2024-02-10'
-  },
-  {
-    id: 3,
-    startup: {
-      name: 'HealthPulse',
-      logo: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
-      industry: 'HealthTech'
-    },
-    amount: '$800K',
-    equity: '12%',
-    status: 'Negotiation',
-    stage: 'Pre-seed',
-    lastActivity: '2024-02-05'
-  }
-];
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+
+const statusVariant: Record<string, 'success' | 'primary' | 'error'> = {
+  completed: 'success',
+  pending: 'primary',
+  failed: 'error',
+}
+
+const typeIcon: Record<string, React.ReactNode> = {
+  deposit: <ArrowDownCircle size={18} className="text-green-500" />,
+  withdraw: <ArrowUpCircle size={18} className="text-red-500" />,
+  transfer: <ArrowRightCircle size={18} className="text-blue-500" />,
+}
 
 export const DealsPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-  
-  const statuses = ['Due Diligence', 'Term Sheet', 'Negotiation', 'Closed', 'Passed'];
-  
-  const toggleStatus = (status: string) => {
-    setSelectedStatus(prev => 
-      prev.includes(status)
-        ? prev.filter(s => s !== status)
-        : [...prev, status]
-    );
-  };
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Due Diligence':
-        return 'primary';
-      case 'Term Sheet':
-        return 'secondary';
-      case 'Negotiation':
-        return 'accent';
-      case 'Closed':
-        return 'success';
-      case 'Passed':
-        return 'error';
-      default:
-        return 'gray';
+  const [wallet, setWallet] = useState<Wallet | null>(null)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showDeposit, setShowDeposit] = useState(false)
+  const [showWithdraw, setShowWithdraw] = useState(false)
+  const [showTransfer, setShowTransfer] = useState(false)
+
+  const fetchData = async () => {
+    try {
+      const [walletRes, txRes] = await Promise.all([
+        paymentApi.getWallet(),
+        paymentApi.getTransactions(),
+      ])
+      setWallet(walletRes.data.wallet)
+      setTransactions(txRes.data.transactions)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-  };
-  
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  const handleSuccess = (updatedWallet: Wallet, newTransaction: Transaction) => {
+    setWallet(updatedWallet)
+    setTransactions(prev => [newTransaction, ...prev])
+    setShowDeposit(false)
+    setShowWithdraw(false)
+    setShowTransfer(false)
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Investment Deals</h1>
-          <p className="text-gray-600">Track and manage your investment pipeline</p>
-        </div>
-        
-        <Button>
-          Add Deal
-        </Button>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+        <p className="text-gray-600">Manage your wallet and transactions</p>
       </div>
-      
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-primary-100 rounded-lg mr-3">
-                <DollarSign size={20} className="text-primary-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Investment</p>
-                <p className="text-lg font-semibold text-gray-900">$4.3M</p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-secondary-100 rounded-lg mr-3">
-                <TrendingUp size={20} className="text-secondary-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Active Deals</p>
-                <p className="text-lg font-semibold text-gray-900">8</p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-accent-100 rounded-lg mr-3">
-                <Users size={20} className="text-accent-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Portfolio Companies</p>
-                <p className="text-lg font-semibold text-gray-900">12</p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-        
-        <Card>
-          <CardBody>
-            <div className="flex items-center">
-              <div className="p-3 bg-success-100 rounded-lg mr-3">
-                <Calendar size={20} className="text-success-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Closed This Month</p>
-                <p className="text-lg font-semibold text-gray-900">2</p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-      
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-2/3">
-          <Input
-            placeholder="Search deals by startup name or industry..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            startAdornment={<Search size={18} />}
-            fullWidth
-          />
-        </div>
-        
-        <div className="w-full md:w-1/3">
-          <div className="flex items-center gap-2">
-            <Filter size={18} className="text-gray-500" />
-            <div className="flex flex-wrap gap-2">
-              {statuses.map(status => (
-                <Badge
-                  key={status}
-                  variant={selectedStatus.includes(status) ? getStatusColor(status) : 'gray'}
-                  className="cursor-pointer"
-                  onClick={() => toggleStatus(status)}
-                >
-                  {status}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Deals table */}
+
+      {/* Wallet card */}
       <Card>
-        <CardHeader>
-          <h2 className="text-lg font-medium text-gray-900">Active Deals</h2>
-        </CardHeader>
-        <CardBody>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Startup
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Equity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stage
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Activity
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {deals.map(deal => (
-                  <tr key={deal.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Avatar
-                          src={deal.startup.logo}
-                          alt={deal.startup.name}
-                          size="sm"
-                          className="flex-shrink-0"
-                        />
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {deal.startup.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {deal.startup.industry}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deal.amount}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deal.equity}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant={getStatusColor(deal.status)}>
-                        {deal.status}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deal.stage}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {new Date(deal.lastActivity).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <CardBody className="p-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-primary-50 rounded-xl">
+                <CreditCard size={32} className="text-primary-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Available Balance</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">
+                  ${wallet?.balance?.toFixed(2) || '0.00'}
+                </p>
+                <p className="text-xs text-gray-400 mt-1 uppercase">
+                  {wallet?.currency || 'USD'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 flex-wrap">
+              <Button
+                leftIcon={<ArrowDownCircle size={18} />}
+                onClick={() => setShowDeposit(true)}
+              >
+                Deposit
+              </Button>
+              <Button
+                variant="outline"
+                leftIcon={<ArrowUpCircle size={18} />}
+                onClick={() => setShowWithdraw(true)}
+              >
+                Withdraw
+              </Button>
+              <Button
+                variant="outline"
+                leftIcon={<ArrowRightCircle size={18} />}
+                onClick={() => setShowTransfer(true)}
+              >
+                Transfer
+              </Button>
+            </div>
           </div>
         </CardBody>
       </Card>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          {
+            label: 'Total Deposited',
+            value: transactions
+              .filter(t => t.type === 'deposit' && t.status === 'completed')
+              .reduce((sum, t) => sum + t.amount, 0)
+              .toFixed(2),
+            color: 'text-green-600',
+          },
+          {
+            label: 'Total Withdrawn',
+            value: transactions
+              .filter(t => t.type === 'withdraw' && t.status === 'completed')
+              .reduce((sum, t) => sum + t.amount, 0)
+              .toFixed(2),
+            color: 'text-red-600',
+          },
+          {
+            label: 'Transactions',
+            value: transactions.length,
+            color: 'text-primary-600',
+          },
+        ].map(({ label, value, color }) => (
+          <Card key={label}>
+            <CardBody className="p-4 text-center">
+              <p className={`text-2xl font-bold ${color}`}>${value}</p>
+              <p className="text-sm text-gray-500">{label}</p>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+
+      {/* Transaction history */}
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-medium text-gray-900">
+            Transaction History
+            <span className="ml-2 text-sm text-gray-400">({transactions.length})</span>
+          </h2>
+        </CardHeader>
+        <CardBody>
+          {loading ? (
+            <p className="text-center text-gray-500 py-8">Loading...</p>
+          ) : transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <DollarSign size={48} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">No transactions yet</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Make your first deposit to get started
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map(tx => (
+                <div
+                  key={tx._id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-gray-50 rounded-full">
+                      {typeIcon[tx.type]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 capitalize">
+                        {tx.type}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">{tx.description}</p>
+                      {tx.type === 'transfer' && tx.toUser && (
+                        <p className="text-xs text-gray-400">
+                          To: {tx.toUser.name}
+                        </p>
+                      )}
+                      {tx.type === 'transfer' && tx.fromUser && !tx.toUser && (
+                        <p className="text-xs text-gray-400">
+                          From: {tx.fromUser.name}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400">
+                        {new Date(tx.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className={`text-base font-semibold ${
+                      tx.type === 'deposit' ? 'text-green-600' :
+                      tx.type === 'withdraw' ? 'text-red-600' : 'text-blue-600'
+                    }`}>
+                      {tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)}
+                    </span>
+                    <Badge variant={statusVariant[tx.status]}>
+                      {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* Modals */}
+      {showDeposit && (
+        <DepositModal
+          stripePromise={stripePromise}
+          onClose={() => setShowDeposit(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
+      {showWithdraw && (
+        <WithdrawModal
+          balance={wallet?.balance || 0}
+          onClose={() => setShowWithdraw(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
+      {showTransfer && (
+        <TransferModal
+          balance={wallet?.balance || 0}
+          onClose={() => setShowTransfer(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
     </div>
-  );
-};
+  )
+}

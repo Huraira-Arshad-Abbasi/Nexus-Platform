@@ -48,9 +48,6 @@ export const authApi = {
 };
 
 // ─── Users / Profile ──────────────────────────────────────────────────────────
-
-
-
 export const userApi = {
   getProfile: (userId: string) =>
     API.get<{ user: Entrepreneur | Investor }>(`/users/${userId}/profile`),
@@ -114,8 +111,8 @@ export const meetingApi = {
 };
 
 
-
-// ─── Document API  ───────────────────────────────
+// ─── Document API types and functions ───────────────────────────────────────
+// ─── Types  ───────────────────────────────
 export interface Document {
   _id: string
   name: string
@@ -130,7 +127,7 @@ export interface Document {
   uploadedBy: { name: string; email: string; avatarUrl: string }
   createdAt: string
 }
-
+// ─── Document API ──────────────────────────────────────────
 export const documentApi = {
   getDocuments: () =>
     API.get<{ documents: Document[] }>('/documents'),
@@ -148,5 +145,52 @@ export const documentApi = {
 };
 
 
-// export const paymentApi = { ... }
+// payment API types and functions
+// ── Types ─────────────────────────────────────
+export interface Wallet {
+  _id: string
+  userId: string
+  balance: number
+  currency: string
+}
+
+export interface Transaction {
+  _id: string
+  type: 'deposit' | 'withdraw' | 'transfer'
+  amount: number
+  status: 'pending' | 'completed' | 'failed'
+  description: string
+  fromUser?: { name: string; email: string }
+  toUser?: { name: string; email: string }
+  createdAt: string
+}
+
+// ── Payment API ───────────────────────────────
+export const paymentApi = {
+  getWallet: () =>
+    API.get<{ wallet: Wallet }>('/payments/wallet'),
+
+  getTransactions: () =>
+    API.get<{ transactions: Transaction[] }>('/payments/transactions'),
+
+  deposit: (amount: number) =>
+    API.post<{ clientSecret: string; transaction: Transaction }>(
+      '/payments/deposit', { amount }
+    ),
+
+  confirmDeposit: (paymentIntentId: string) =>
+    API.post<{ transaction: Transaction; wallet: Wallet }>(
+      '/payments/deposit/confirm', { paymentIntentId }
+    ),
+
+  withdraw: (amount: number) =>
+    API.post<{ transaction: Transaction; wallet: Wallet }>(
+      '/payments/withdraw', { amount }
+    ),
+
+  transfer: (amount: number, toUserId: string) =>
+    API.post<{ transaction: Transaction; wallet: Wallet }>(
+      '/payments/transfer', { amount, toUserId }
+    ),
+}
 
