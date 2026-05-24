@@ -102,6 +102,7 @@ Nexus is a platform where **entrepreneurs** can showcase their startups and conn
 ---
 
 ## 📁 Project Structure
+```bash
 nexus/
 ├── frontend/                   # React + TypeScript
 │   ├── src/
@@ -161,6 +162,7 @@ nexus/
 ├── socket/
 │   └── videoSignaling.js   # Socket.IO WebRTC signaling
 └── server.js
+```
 
 ---
 
@@ -175,7 +177,7 @@ nexus/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/nexus.git
+git clone https://github.com/Huraira-Arshad-Abbasi/Nexus-Platform.git
 cd nexus
 ```
 
@@ -229,7 +231,7 @@ npm run dev
 
 ### 4. Open in browser
 
-[text](http://localhost:5173)
+[http://localhost:5173](http://localhost:5173)
 
 ---
 
