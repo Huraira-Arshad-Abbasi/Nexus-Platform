@@ -6,8 +6,10 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import { authLimiter, generalLimiter } from './middleware/rateLimiter.js'
 import meetingRoutes from './routes/meeting.routes.js';
 import { initVideoSignaling } from './socket/videoSignaling.js';
 import documentRoutes from './routes/document.routes.js'
@@ -28,6 +30,7 @@ const io = new Server(httpServer, {
   }
 });
 
+app.use(helmet())
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -42,7 +45,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => res.send('API Running...'));
-app.use('/api/auth', authRoutes);
+app.use('/api', generalLimiter) // Apply general rate limiter to all API routes
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/documents', documentRoutes);
